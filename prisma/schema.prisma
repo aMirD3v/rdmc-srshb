@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//-------------------------------------------------
+// 1. AUTHENTICATION MODELS (for NextAuth.js)
+//-------------------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  username        String?   @unique
+  email           String?   @unique
+  emailVerified   DateTime?
+  hashedPassword  String?
+  image           String?
+  role            Role      @default(USER)
+  accounts        Account[]
+  sessions        Session[]
+  submittedItems  Item[]    @relation("SubmittedBy")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUBMITTER
+  REVIEWER
+}
+
+enum ItemStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  REJECTED
+}
+
+
+//-------------------------------------------------
+// 2. INSTITUTIONAL REPOSITORY MODELS
+//-------------------------------------------------
+
+model Community {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // For sub-communities
+  parentId      String?
+  parent        Community?    @relation("SubCommunities", fields: [parentId], references: [id], onDelete: NoAction)
+  subCommunities Community[]  @relation("SubCommunities")
+
+  collections   Collection[]
+}
+
+model Collection {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  communityId   String
+  community     Community @relation(fields: [communityId], references: [id])
+
+  items         Item[]
+}
+
+model Item {
+  id              String      @id @default(cuid())
+  title           String
+  handle          String      @unique @default(cuid()) // A unique identifier, like a DOI
+  status          ItemStatus  @default(DRAFT)
+  isDiscoverable  Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  collectionId    String
+  collection      Collection  @relation(fields: [collectionId], references: [id])
+
+  submitterId     String
+  submitter       User        @relation("SubmittedBy", fields: [submitterId], references: [id])
+
+  metadata        MetadataField[]
+  bitstreams      Bitstream[]
+}
+
+// Flexible metadata using key-value pairs (Dublin Core style)
+model MetadataField {
+  id        String   @id @default(cuid())
+  key       String   // e.g., "dc.creator", "dc.description.abstract"
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+// Represents a single file (e.g., a PDF document)
+model Bitstream {
+  id          String   @id @default(cuid())
+  name        String
+  mimeType    String
+  size        Int      // Size in bytes
+  storageKey  String   // Path to file in storage (e.g., S3 key or local path)
+  createdAt   DateTime @default(now())
+
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}

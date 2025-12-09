@@ -173,18 +173,18 @@ export default async function Home() {
               Somali Regional State Health Bureau Repository
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
               Welcome to the Somali Regional State Health Bureau Repository
             </h1>
             
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl">
+            <p className=" text-blue-100 mb-8 max-w-2xl">
               At the heart of advancing research and management at Somali Regional State Health Bureau, 
               the Repository is dedicated to improving outcomes through the efficient collection 
               and dissemination of knowledge.
             </p>
 
             {/* Search Section in Hero */}
-            <div className="mb-10">
+            <div className="">
               <form action="/search" method="GET" className="relative max-w-2xl">
                 <div className="relative border border-gray-300 rounded-xl shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -208,7 +208,7 @@ export default async function Home() {
             </div>
 
             {/* Key Features List */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            {/* <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h2 className="text-xl font-semibold text-white mb-4">Key Features:</h2>
               <ul className="space-y-3">
                 <li className="flex items-start">
@@ -236,7 +236,7 @@ export default async function Home() {
                   </span>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

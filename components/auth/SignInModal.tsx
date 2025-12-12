@@ -39,7 +39,7 @@ export default function SignInModal() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-800">
+      <button onClick={() => setOpen(true)} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
         Sign In
       </button>
       <Modal open={open} onClose={() => setOpen(false)}>

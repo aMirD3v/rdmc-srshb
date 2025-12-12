@@ -164,7 +164,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
          {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-600">
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-800 to-blue-400">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-15">
           <div className="max-w-5xl">
@@ -197,7 +197,7 @@ export default async function Home() {
                 </div>
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-blue-700 px-6 py-2 rounded-lg hover:bg-blue-800 hover:text-white transition-colors"
                 >
                   <span className="flex items-center">
                     <Search size={20} className="mr-2" />
@@ -291,7 +291,7 @@ export default async function Home() {
             ))}
           </div>
           <div className="mt-8 text-center">
-            <button className="bg-gray-700 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+            <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
               Load more ...
             </button>
           </div>
@@ -319,7 +319,7 @@ export default async function Home() {
           </div>
         </div>
         {/* CTA Section */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-500 rounded-2xl p-8 md:p-12 text-white">
+        <div className="bg-gradient-to-r from-blue-500 via-blue-800 to-blue-400 rounded-2xl p-8 md:p-12 text-white">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to Share Your Research?</h2>
             <p className="text-blue-100 mb-8 text-lg">

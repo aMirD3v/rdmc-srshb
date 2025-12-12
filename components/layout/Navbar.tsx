@@ -93,9 +93,8 @@ const Navbar = () => {
             {/* Search and User Actions */}
             <div className="flex items-center space-x-4">
               {/* Search Button - Desktop */}
-              <button className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+              <button className="hidden md:flex items-center gap-2 px-4 py-2 ">
                 <Search size={18} className="text-gray-500" />
-                <span className="text-gray-600">Search</span>
               </button>
 
               {/* User Actions */}

@@ -2,6 +2,7 @@ import Pagination from "@/components/ui/Pagination";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Prisma } from '@prisma/client';
+import { buildAdvancedWhereClause, QueryElement } from "@/lib/search-builder";
 
 const PAGE_SIZE = 10;
 
@@ -11,8 +12,8 @@ const FACET_KEY_MAP: { [key: string]: string } = {
     'author': 'dc.contributor.author',
 };
 
-export default async function SearchPage({ searchParams }: { searchParams: { query?: string, facet?: string, page?: string, startDate?: string, endDate?: string } }) {
-  const { query, facet, page = '1', startDate, endDate } = searchParams;
+export default async function SearchPage({ searchParams }: { searchParams: { query?: string, facet?: string, page?: string, startDate?: string, endDate?: string, advancedQuery?: string } }) {
+  const { query, facet, page = '1', startDate, endDate, advancedQuery } = searchParams;
   const currentPage = parseInt(page, 10);
 
   let items = [];
@@ -21,7 +22,19 @@ export default async function SearchPage({ searchParams }: { searchParams: { que
   let description = 'Browsing all published items.';
   let searchUrlParams = '';
 
-  if (facet === 'date' && startDate && endDate) {
+  if (advancedQuery) {
+    try {
+        const queryElements: QueryElement[] = JSON.parse(decodeURIComponent(advancedQuery));
+        const advancedWhere = buildAdvancedWhereClause(queryElements);
+        // Merge with the base `status: 'PUBLISHED'` condition
+        where.AND = [...(where.AND as any[] || []), ... (advancedWhere.AND || [])];
+        description = 'Advanced search results';
+        searchUrlParams = `advancedQuery=${advancedQuery}`;
+    } catch(e) {
+        console.error("Failed to parse advanced query", e);
+        description = "Error: Invalid advanced search query.";
+    }
+  } else if (facet === 'date' && startDate && endDate) {
     where.metadata = {
         some: {
             key: 'dc.date.issued',
@@ -49,20 +62,35 @@ export default async function SearchPage({ searchParams }: { searchParams: { que
     searchUrlParams = `query=${encodeURIComponent(query)}`;
   }
 
-  totalItems = await prisma.item.count({ where });
-  items = await prisma.item.findMany({
-    where,
-    include: {
-      collection: true,
-      metadata: {
-          where: { key: 'dc.description.abstract' },
-          take: 1
+  if(advancedQuery || query || startDate) {
+    totalItems = await prisma.item.count({ where });
+    items = await prisma.item.findMany({
+      where,
+      include: {
+        collection: true,
+        metadata: {
+            where: { key: 'dc.description.abstract' },
+            take: 1
+        }
       }
-    },
-    skip: (currentPage - 1) * PAGE_SIZE,
-    take: PAGE_SIZE,
-    orderBy: { createdAt: 'desc' }
-  });
+    });
+  } else {
+    // If no search parameters, fetch all published items with pagination
+    totalItems = await prisma.item.count({ where });
+    items = await prisma.item.findMany({
+      where,
+      include: {
+        collection: true,
+        metadata: {
+            where: { key: 'dc.description.abstract' },
+            take: 1
+        }
+      },
+      skip: (currentPage - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      orderBy: { createdAt: 'desc' }
+    });
+  }
 
   const totalPages = Math.ceil(totalItems / PAGE_SIZE);
   const paginationBaseUrl = `/search?${searchUrlParams}`;
@@ -85,7 +113,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { que
               </div>
           );
         }) : (
-          <p className="text-center py-10 text-gray-500">No results found.</p>
+          <p className="text-center py-10 text-gray-500">No results found for your criteria.</p>
         )}
       </div>
 

@@ -40,7 +40,7 @@ export default function FacetClientPanel({ data, facetName }: FacetClientPanelPr
                                 href={`/search?facet=${facetName}&query=${encodeURIComponent(item.name)}`}
                                 className="flex justify-between items-center p-2 rounded-md hover:bg-gray-100 text-sm group"
                             >
-                                <span className="text-gray-700 group-hover:text-blue-600 truncate pr-2">{item.name}</span>
+                                <span className="text-gray-700 group-hover:text-blue-600 truncate pr-2 capitalize">{item.name}</span>
                                 <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600 flex-shrink-0">{item.count}</span>
                             </Link>
                         </li>
@@ -49,6 +49,11 @@ export default function FacetClientPanel({ data, facetName }: FacetClientPanelPr
             ) : (
                 <p className="text-sm text-gray-500 p-2">No {facetName} found.</p>
             )}
+            <div className="mt-2 pt-2 border-t">
+                <Link href={`/browse/${facetName}s`} className="text-sm font-semibold text-blue-600 hover:underline">
+                    Browse all...
+                </Link>
+            </div>
         </div>
     );
 }

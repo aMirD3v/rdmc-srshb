@@ -1,6 +1,7 @@
 import { Search, ChevronDown, BarChart3, FileText, Users, Database, ArrowRight, Eye, Calendar, Download, Globe } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import RecentSubmissionCard from '@/components/RecentSubmissionCard'; // Import the new component
 
 const StatCard = ({ icon: Icon, value, label }: { icon: any; value: string; label: string }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -51,56 +52,6 @@ const CommunityCard = ({ community }: { community: any }) => {
   );
 };
 
-const RecentSubmissionCard = ({ item }: { item: any }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-5 hover:border-blue-300 hover:shadow-md transition-all duration-300 group">
-    <div className="flex gap-4">
-      <div className="w-20 h-20 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg flex items-center justify-center flex-shrink-0">
-        <FileText className="w-8 h-8 text-blue-600" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            Item
-          </span>
-          <span className="text-xs text-gray-500 flex items-center">
-            <Calendar className="w-3 h-3 mr-1" />
-            {new Date(item.createdAt).toLocaleDateString()}
-          </span>
-        </div>
-        
-        <Link href={`/items/${item.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
-            {item.title}
-          </h3>
-        </Link>
-        
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            <span>by {item.submitter.name}</span>
-            <span className="mx-2">•</span>
-            <Link 
-              href={`/collections/${item.collection.id}`}
-              className="text-blue-600 hover:underline"
-            >
-              {item.collection.name}
-            </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-              <Eye className="w-4 h-4 mr-1" />
-              View
-            </button>
-            <button className="flex items-center text-sm text-gray-600 hover:text-gray-800">
-              <Download className="w-4 h-4 mr-1" />
-              Download
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 export default async function Home() {
   const communities = await prisma.community.findMany({
     take: 6,
@@ -116,14 +67,25 @@ export default async function Home() {
     },
   });
 
-  const recentItems = await prisma.item.findMany({
+  const rawRecentItems = await prisma.item.findMany({
     take: 4,
     where: { status: 'PUBLISHED' },
     orderBy: { createdAt: 'desc' },
     include: {
       submitter: true,
       collection: true,
+      metadata: {
+        where: { key: 'dc.description.abstract' },
+      },
     },
+  });
+
+  const recentItems = rawRecentItems.map(item => {
+    const abstract = item.metadata.find(m => m.key === 'dc.description.abstract')?.value || '';
+    return {
+      ...item,
+      abstract,
+    };
   });
 
   const totalItems = await prisma.item.count();

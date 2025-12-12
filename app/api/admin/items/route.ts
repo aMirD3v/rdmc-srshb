@@ -19,13 +19,43 @@ export async function POST(req: Request) {
   try {
     const status = session.user.role === 'ADMIN' ? 'PUBLISHED' : 'IN_REVIEW';
 
-    const item = await prisma.item.create({
-      data: {
-        title,
-        collectionId,
-        submitterId: session.user.id,
-        status,
-      },
+    const defaultMetadata = [
+      { key: 'dc.title', value: title },
+      { key: 'dc.contributor.author', value: '' },
+      { key: 'dc.title.alternative', value: '' },
+      { key: 'dc.date.issued', value: '' },
+      { key: 'dc.publisher', value: '' },
+      { key: 'dc.identifier.citation', value: '' },
+      { key: 'dc.relation.ispartofseries', value: '' },
+      { key: 'dc.identifier.uri', value: '' },
+      { key: 'dc.type', value: '' },
+      { key: 'dc.language.iso', value: '' },
+      { key: 'dc.subject', value: '' },
+      { key: 'dc.description.abstract', value: '' },
+      { key: 'dc.description.sponsorship', value: '' },
+      { key: 'dc.description', value: '' },
+    ];
+
+    const item = await prisma.$transaction(async (tx) => {
+      const newItem = await tx.item.create({
+        data: {
+          title,
+          collectionId,
+          submitterId: session.user.id,
+          status,
+        },
+      });
+
+      const metadataToCreate = defaultMetadata.map(meta => ({
+        ...meta,
+        itemId: newItem.id,
+      }));
+
+      await tx.metadataField.createMany({
+        data: metadataToCreate,
+      });
+
+      return newItem;
     });
 
     return NextResponse.json(item, { status: 201 });

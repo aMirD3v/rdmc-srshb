@@ -66,7 +66,7 @@ export default function SignInModal() {
               required
             />
           </div>
-          <button type="submit" className="w-full bg-gray-700 text-white py-2 rounded-md hover:bg-gray-800" disabled={isLoading}>
+          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700" disabled={isLoading}>
             Sign In
           </button>
         </form>

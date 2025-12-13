@@ -14,8 +14,24 @@ const FACET_KEY_MAP: { [key: string]: string } = {
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: { query?: string, facet?: string, page?: string, startDate?: string, endDate?: string, advancedQuery?: string } }) {
-  const { query, facet, page = '1', startDate, endDate, advancedQuery } = searchParams;
-  const currentPage = parseInt(page, 10);
+  let query: string | undefined;
+  let facet: string | undefined;
+  let page: string | undefined;
+  let startDate: string | undefined;
+  let endDate: string | undefined;
+  let advancedQuery: string | undefined;
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === 'query') query = value as string;
+    else if (key === 'facet') facet = value as string;
+    else if (key === 'page') page = value as string;
+    else if (key === 'startDate') startDate = value as string;
+    else if (key === 'endDate') endDate = value as string;
+    else if (key === 'advancedQuery') advancedQuery = value as string;
+  }
+
+  // Assign default value for page after collecting all properties
+  const currentPage = parseInt(page ?? '1', 10);
 
   let items = [];
   let totalItems = 0;
@@ -49,7 +65,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { que
 
   } else if (query && facet && FACET_KEY_MAP[facet]) {
     const metadataKey = FACET_KEY_MAP[facet];
-    where.metadata = { some: { key: metadataKey, value: query }};
+    where.metadata = { some: { key: metadataKey, value: { contains: query, mode: 'insensitive' } }};
     description = `Found items with ${facet} "${query}"`;
     searchUrlParams = `query=${encodeURIComponent(query)}&facet=${encodeURIComponent(facet)}`;
 

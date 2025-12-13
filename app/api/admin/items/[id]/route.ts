@@ -36,18 +36,26 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title } = await req.json();
+  const { title, status } = await req.json();
 
   if (!title) {
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
   }
 
   try {
+
+    const dataToUpdate: { title: string; status?: 'IN_REVIEW' | 'PUBLISHED' | 'REJECTED' } = {
+      title,
+    };
+
+    if (status && session.user.role === 'ADMIN') {
+      dataToUpdate.status = status;
+    }
+
+
     const item = await prisma.item.update({
       where: { id: params.id },
-      data: {
-        title,
-      },
+      data: dataToUpdate,
     });
 
     return NextResponse.json(item);
